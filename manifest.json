@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Theater Mode for Google Meet",
+  "version": "1.0",
+  "description": "Screen shares fill the window, with movable camera previews and a video-only picture-in-picture.",
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": ["pip.js", "layout.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    }
+  ]
+}
