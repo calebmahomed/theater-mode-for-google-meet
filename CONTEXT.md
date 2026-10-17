@@ -1,6 +1,6 @@
 # Theater Mode for Google Meet: working context
 
-Chrome MV3 extension (user runs it in Arc). Content scripts run in the page's MAIN world at document_start on meet.google.com. Not a git repo. No build step; reload the unpacked extension to test.
+Chrome MV3 extension, "Theater Mode for Google Meet" (renamed from Meet Better PiP, 2026-10-17). User runs it in Arc. Public repo: https://github.com/calebmahomed/theater-mode-for-google-meet (MIT). Content scripts run in the page's MAIN world at document_start on meet.google.com. No build step; reload the unpacked extension to test.
 
 ## Files
 - `pip.js`: picture-in-picture.
@@ -78,11 +78,9 @@ Chrome MV3 extension (user runs it in Arc). Content scripts run in the page's MA
   - Bars reveal changed at the user's request: show on any mouse move, hide after 2s still. They stay up while the cursor rests on a bar or docked group. Both unverified (the call was in PiP when I checked).
 
 ## Open / next
-1. Reload and confirm in a call: tiles stay put when people talk or mute (needs 2+ visible tiles: un-hide yourself or have the other participant's camera on), and the docked groups and pill are usable.
-2. Tab share: confirm the zoom pill also moves.
-3. Remote share works. Confirm Zoom out is clear of the presenting toast, and the show-on-move / 2s-hide bars.
-4. Strip drag confirmed working. Confirm the speaking ring visually.
-5. Restyle the preview strip (round avatar, cramped self-tile buttons, resize handle).
+All of the 2026-10-17 fixes were confirmed working by the user (presenting, remote share, drag/resize, docked bars, show-on-move bars, speaking ring).
+1. Restyle the preview strip (round avatar, cramped self-tile buttons, resize handle).
+2. Tab share: the zoom pill move hasn't been explicitly confirmed (window and remote shares were).
 
 Older:
 - Confirm the presentation-detection label against a live call. (`Zoom in` exists in the main doc while presenting.)
