@@ -73,7 +73,22 @@ Capture notes:
 - [ ] Review notes for the reviewer: how to test. Join a Meet call with two accounts, share a tab, and see the layout.
 - [ ] Review usually takes a few days. After approval, tag `v1.0.0` on GitHub with release notes.
 
+## Roles
+- **Maintainer (owner):** designs and stages all visuals: icon, promo tiles, marquee and screenshots, including who appears in them.
+- **Claude:** project management and code. Keeps this roadmap current, does the code tasks in section 2, writes the listing copy and privacy text, and runs the submission checklist. No design drafts.
+
+## Roadmap
+Answer to "what's next": the first unchecked item, plus anything blocked.
+
+1. [ ] Preview strip restyle (round avatar, cramped self-tile buttons, resize handle). *Code, before screenshots.*
+2. [ ] Confirm the zoom pill moves on a tab share. *Quick live check.*
+3. [ ] Maintainer: icon at 16/32/48/128 px. *Blocks 4.*
+4. [ ] Manifest `icons` + `version: 1.0.0`, then test in plain Chrome (section 2).
+5. [ ] Maintainer: screenshots, small promo tile, optional marquee (section 5). *Needs 1 done.*
+6. [ ] Listing copy and `PRIVACY.md` (sections 3 and 6).
+7. [ ] Release zip and developer account registration.
+8. [ ] Submit with review notes (section 7).
+9. [ ] After approval: tag `v1.0.0` and write release notes.
+
 ## Open questions
-- Icon: design it yourself, have me draft SVGs to iterate on, or hire someone?
-- Who appears in the screenshots? This needs a second consenting participant.
-- Do the preview-strip restyle before launch? It's what screenshot 2 shows, so ideally yes.
+- None right now. Visuals are owned by the maintainer, and the restyle comes first (roadmap item 1).

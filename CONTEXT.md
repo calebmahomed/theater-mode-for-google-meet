@@ -79,7 +79,7 @@ Chrome MV3 extension, "Theater Mode for Google Meet" (renamed from Meet Better P
 
 ## Open / next
 All of the 2026-10-17 fixes were confirmed working by the user (presenting, remote share, drag/resize, docked bars, show-on-move bars, speaking ring).
-1. Restyle the preview strip (round avatar, cramped self-tile buttons, resize handle).
+1. See the Roadmap in `plans/chrome-web-store.md` (next up: preview strip restyle).
 2. Tab share: the zoom pill move hasn't been explicitly confirmed (window and remote shares were).
 
 Older:
