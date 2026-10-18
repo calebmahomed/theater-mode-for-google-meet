@@ -135,8 +135,10 @@ Chrome MV3 extension, "Theater Mode for Google Meet" (renamed from Meet Better P
     participant tiles still had only 2 video elements (own share + own camera).
   - Confirmed live at the same time: the bridge removed a stale `bp-self-hidden: '1'` that
     `chrome.storage` had no opinion on — the Critical the code review caught, working.
-  - **Open:** Alt+P gives no feedback when there is nothing to show, which is what made this look
-    broken for half an hour. Worth a brief toast or a console warning.
+  - Fixed: Alt+P now shows a 2.5s toast ("Nothing to show — no one else's camera is on") when
+    `showLargestRemote()` finds nothing, instead of failing silently. Inline styles, bottom
+    centre, `pointer-events: none`. With PiP switched off it still does nothing silently — off
+    means off, and the keystroke belongs to the page.
 
 ## Open / next
 1. **Retest Alt+P with a second participant**, and the control fade above.

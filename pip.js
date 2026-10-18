@@ -142,6 +142,27 @@
     return best;
   };
 
+  // Alt+P with every other camera off used to do nothing and say nothing, which is
+  // indistinguishable from the shortcut being broken. Inline styles: cheaper than a <style>
+  // and immune to Meet's Trusted Types.
+  let toastEl, toastTimer;
+  const toast = (msg) => {
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      Object.assign(toastEl.style, {
+        position: 'fixed', left: '50%', bottom: '96px', transform: 'translateX(-50%)',
+        zIndex: '2147483647', padding: '10px 16px', borderRadius: '8px', pointerEvents: 'none',
+        background: 'rgba(32,33,36,.92)', color: '#fff', font: '500 13px system-ui',
+        opacity: '0', transition: 'opacity .2s',
+      });
+    }
+    toastEl.textContent = msg;
+    if (!toastEl.isConnected) document.body?.append(toastEl);
+    requestAnimationFrame(() => { toastEl.style.opacity = '1'; });
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toastEl.style.opacity = '0'; }, 2500);
+  };
+
   document.addEventListener('keydown', async (e) => {
     if (!e.altKey || e.code !== 'KeyP') return;
     // Before preventDefault: with the feature off the keystroke belongs to the page.
@@ -149,7 +170,7 @@
     e.preventDefault();
     e.stopPropagation();
     if (inNativePip) return document.exitPictureInPicture();
-    if (!(await showLargestRemote())) return;
+    if (!(await showLargestRemote())) return toast("Nothing to show \u2014 no one else's camera is on");
     await native.play();
     await native.requestPictureInPicture();
     clearInterval(timer);
