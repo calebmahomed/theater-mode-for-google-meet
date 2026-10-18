@@ -12,15 +12,22 @@ Store specs below are from memory. Check them against the current Chrome Web Sto
 - Single purpose statement: "Improves Google Meet's layout for screen sharing: full-window shares, movable camera previews and a video-only picture-in-picture."
 
 ## 2. Code changes before submitting
-- [ ] Icons: 16, 32, 48 and 128 px PNGs, plus an `icons` field in `manifest.json`.
+- [x] Icons: 16, 32, 48 and 128 px PNGs, plus an `icons` field in `manifest.json`. Done
+  2026-10-18. Brand colour `#FFCE1B`. Outstanding: the white play triangle is 1.49:1 against
+  the amber and should be near-black.
 - [ ] Bump `version` to `1.0.0`.
 - [ ] Test in plain Chrome, not just Arc: a fresh profile, presenting a tab, a window and a full screen, a remote share, and PiP.
-- [ ] Release zip: `manifest.json`, `pip.js`, `layout.js`, icons. Leave out `CONTEXT.md`, `README.md`, `plans/` and `.git`. A one-line `zip` command is enough; no build tool.
-- [ ] Permissions: none beyond the `meet.google.com` content-script match. No remote code and no network requests. Mention this in the review notes; it speeds up review.
+- [ ] Release zip: `manifest.json`, `settings.js`, `pip.js`, `layout.js`, `bridge.js`,
+  `popup.html`, `popup.js`, `icons/`. Leave out `test-settings.mjs`. Leave out `CONTEXT.md`, `README.md`, `plans/` and `.git`. A one-line `zip` command is enough; no build tool.
+- [ ] Permissions: `storage` plus the `meet.google.com` content-script match, and nothing else.
+  `storage` holds four booleans (master, picture-in-picture, hide-my-tile, keep-controls-visible)
+  on the user's machine. No background script, no remote code, no network requests. Mention this
+  in the review notes; it speeds up review.
 
 ## 3. Privacy tab
 - Data collected: none.
-  - Preferences (strip size and position, hide-me) stay in `localStorage` on the user's machine.
+  - Preferences stay on the user's machine: four booleans in `chrome.storage.local`, and strip
+    size and position in the page's `localStorage`.
   - Nothing is sent anywhere.
 - Host permission justification: "Runs only on meet.google.com to rearrange the call layout."
 - Privacy policy: probably optional when nothing is collected, but add a short one anyway. Host it as `PRIVACY.md` in the repo once shipped.
@@ -80,15 +87,21 @@ Capture notes:
 ## Roadmap
 Answer to "what's next": the first unchecked item, plus anything blocked.
 
-1. [ ] Preview strip restyle (round avatar, cramped self-tile buttons, resize handle). *Code, before screenshots.*
-2. [ ] Confirm the zoom pill moves on a tab share. *Quick live check.*
-3. [ ] Maintainer: icon at 16/32/48/128 px. *Blocks 4.*
-4. [ ] Manifest `icons` + `version: 1.0.0`, then test in plain Chrome (section 2).
-5. [ ] Maintainer: screenshots, small promo tile, optional marquee (section 5). *Needs 1 done.*
-6. [ ] Listing copy and `PRIVACY.md` (sections 3 and 6).
-7. [ ] Release zip and developer account registration.
-8. [ ] Submit with review notes (section 7).
-9. [ ] After approval: tag `v1.0.0` and write release notes.
+1. [x] Maintainer: icon at 16/32/48/128 px. Done 2026-10-18.
+2. [x] Toolbar popup with settings, and a README install section for non-developers.
+   Done 2026-10-18, **not yet verified in a live call**.
+3. [ ] Verify the popup in a live call. *Blocks everything below.* Steps in
+   `plans/popup-settings-implementation.md`.
+4. [ ] Maintainer: redraw the icon's play triangle in near-black (currently 1.49:1 on the amber).
+5. [ ] Preview strip restyle (round avatar, cramped self-tile buttons, resize handle). *Code, before screenshots.*
+6. [ ] Confirm the zoom pill moves on a tab share. *Quick live check.*
+7. [ ] `version: 1.0.0`, then test in plain Chrome (section 2).
+8. [ ] Maintainer: screenshots, small promo tile, optional marquee (section 5). *Needs 5 done.*
+9. [ ] Listing copy and `PRIVACY.md` (sections 3 and 6).
+10. [ ] Release zip and developer account registration.
+11. [ ] Submit with review notes (section 7).
+12. [ ] After approval: tag `v1.0.0` and write release notes.
 
 ## Open questions
-- None right now. Visuals are owned by the maintainer, and the restyle comes first (roadmap item 1).
+- None right now. Visuals are owned by the maintainer. Next action is roadmap item 3: verify the
+  popup in a live call.

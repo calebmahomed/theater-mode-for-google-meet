@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Theater Mode</title>
+<style>
+  /* Inline styles are fine on an extension page; inline scripts are not, so popup.js is separate.
+     One surface, charcoal, in both browser themes. That's the palette in plans/chrome-web-store.md
+     (charcoal base, one warm accent, white text) and it's what lets the toggle use the brand
+     #FFCE1B unchanged: 11.06:1 here, against 1.49:1 on white, which is below the 3:1 WCAG 1.4.11
+     wants of a state indicator. A light popup would force a duller gold that doesn't match the
+     toolbar icon. */
+  :root {
+    --bg: #1f1f1f;
+    --fg: #ffffff;
+    --muted: #9aa0a6;
+    --line: #3c4043;
+    --off: #80868b;
+    --on: #ffce1b;
+    --knob-on: #1f1f1f;
+    --hover: #2c2c2c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    width: 300px; margin: 0; background: var(--bg); color: var(--fg);
+    font: 400 14px/1.4 system-ui, sans-serif;
+  }
+  header { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  header img { width: 32px; height: 32px; }
+  header h1 { margin: 0; font-size: 14px; font-weight: 500; }
+  #status { margin: 1px 0 0; font-size: 12px; color: var(--muted); }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 16px; }
+  .row label, .row span { font-size: 14px; }
+  .row p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+  #prefs.off { opacity: .4; pointer-events: none; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
+  .tg {
+    appearance: none; margin: 0; flex: none; width: 36px; height: 20px; border: 0; border-radius: 10px;
+    background: var(--off); position: relative; cursor: pointer; transition: background .15s;
+  }
+  .tg::after {
+    content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+    border-radius: 50%; background: #fff; transition: left .15s;
+  }
+  .tg:checked { background: var(--on); }
+  .tg:checked::after { left: 18px; background: var(--knob-on); }
+  .tg:focus-visible { outline: 2px solid var(--on); outline-offset: 2px; }
+  .tg:disabled { cursor: default; }
+  button {
+    font: inherit; font-size: 13px; padding: 5px 12px; border: 1px solid var(--line);
+    border-radius: 6px; background: transparent; color: var(--fg); cursor: pointer;
+  }
+  button:hover:not(:disabled) { background: var(--hover); }
+  button:disabled { opacity: .4; cursor: default; }
+  footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted);
+  }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="icons/128-web-store.png" alt="">
+  <div style="flex:1">
+    <h1>Theater Mode</h1>
+    <p id="status">Checking this tab…</p>
+  </div>
+  <input type="checkbox" class="tg" id="enabled" aria-label="Theater Mode on">
+</header>
+
+<div id="prefs">
+  <div class="row">
+    <div>
+      <label for="selfHidden">Hide my tile</label>
+      <p id="d-self">While someone is presenting</p>
+    </div>
+    <input type="checkbox" class="tg" id="selfHidden" aria-describedby="d-self">
+  </div>
+  <div class="row">
+    <div>
+      <label for="pip">Picture-in-picture</label>
+      <p id="d-pip">Video-only PiP window</p>
+    </div>
+    <input type="checkbox" class="tg" id="pip" aria-describedby="d-pip">
+  </div>
+  <div class="row">
+    <div>
+      <label for="barsPinned">Keep controls visible</label>
+      <p id="d-bars">Don't fade Meet's bars</p>
+    </div>
+    <input type="checkbox" class="tg" id="barsPinned" aria-describedby="d-bars">
+  </div>
+  <hr>
+  <div class="row">
+    <div>
+      <span>Preview strip</span>
+      <p id="d-strip">Dragged off screen? Put it back</p>
+    </div>
+    <button id="reset" aria-label="Reset preview strip" aria-describedby="d-strip">Reset</button>
+  </div>
+</div>
+
+<footer>
+  <span>Alt+P · picture-in-picture</span>
+  <span>
+    <a href="https://github.com/calebmahomed/theater-mode-for-google-meet" target="_blank" rel="noreferrer">GitHub</a>
+    <span id="version"></span>
+  </span>
+</footer>
+
+<script src="popup.js"></script>
+</body>
+</html>

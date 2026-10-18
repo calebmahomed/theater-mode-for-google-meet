@@ -3,6 +3,9 @@
   const WIDTH = 480;
   const HEIGHT = 270;
 
+  const S = window.__bpSettings;
+  const pipOn = () => S.enabled && S.pip;
+
   // Track every peer connection so we know which video tracks are remote.
   // Self camera and screen-share preview are local tracks, so they never match.
   const pcs = new Set();
@@ -141,6 +144,8 @@
 
   document.addEventListener('keydown', async (e) => {
     if (!e.altKey || e.code !== 'KeyP') return;
+    // Before preventDefault: with the feature off the keystroke belongs to the page.
+    if (!pipOn()) return;
     e.preventDefault();
     e.stopPropagation();
     if (inNativePip) return document.exitPictureInPicture();
@@ -172,6 +177,10 @@
   if (!proto) return;
   const requestWindow = proto.requestWindow;
   proto.requestWindow = async function (opts = {}) {
+    // Checked per call, not once at load, so the toggle works without a reload. Off means
+    // Meet's own PiP window, its own size: forcing 480x270 is visible, so it has to be gated
+    // too, or "off" would still change what Meet does.
+    if (!pipOn()) return requestWindow.call(this, opts);
     const pip = await requestWindow.call(this, { ...opts, width: WIDTH, height: HEIGHT });
     setup(pip);
     return pip;
