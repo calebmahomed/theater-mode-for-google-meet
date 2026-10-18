@@ -33,8 +33,8 @@
   // ponytail: 50 slots; more tiles than that overlap the last one.
 
   // "Hide me / Show me" pill after the last preview, visible while hovering the strip.
-  let selfHidden = false;
-  try { selfHidden = localStorage.getItem('bp-self-hidden') === '1'; } catch {}
+  const S = window.__bpSettings;
+  let selfHidden = S.selfHidden;
   const selfBtn = document.createElement('button');
   selfBtn.id = 'bp-self-btn';
   Object.assign(selfBtn.style, {
@@ -46,7 +46,9 @@
   labelSelfBtn();
   selfBtn.addEventListener('click', () => {
     selfHidden = !selfHidden;
-    try { localStorage.setItem('bp-self-hidden', selfHidden ? '1' : ''); } catch {}
+    // Through the setter, not straight to localStorage: chrome.storage is authoritative, and a
+    // direct write here would be overwritten by the bridge's mirror on the next page load.
+    window.__bpSet('selfHidden', selfHidden);
     labelSelfBtn();
     tick();
   });
@@ -131,6 +133,12 @@
 
   const seen = new Map(); // participant id -> first-seen order
   const tick = () => {
+    if (!S.enabled) {
+      root.classList.remove('bp-presenting');
+      selfBtn.style.display = 'none';
+      handle.style.display = 'none';
+      return;
+    }
     const presVideo = presentationVideo();
     root.classList.toggle('bp-presenting', !!presVideo);
     selfBtn.style.display = presVideo ? 'block' : 'none';
@@ -203,9 +211,31 @@
       const r = b.getBoundingClientRect();
       return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
     });
-    if (!overBar) idle = setTimeout(() => root.classList.remove('bp-bars'), 2000);
+    if (!overBar && !S.barsPinned) idle = setTimeout(() => root.classList.remove('bp-bars'), 2000);
   }, true);
-  root.addEventListener('mouseleave', () => { clearTimeout(idle); root.classList.remove('bp-bars'); });
+  root.addEventListener('mouseleave', () => {
+    if (S.barsPinned) return;
+    clearTimeout(idle);
+    root.classList.remove('bp-bars');
+  });
+
+  window.__bpOnSettings(() => {
+    selfHidden = S.selfHidden;
+    labelSelfBtn();
+    if (S.barsPinned) { clearTimeout(idle); root.classList.add('bp-bars'); }
+    tick();
+  });
+
+  // The popup's "Reset" button, relayed by bridge.js. Restores this file's own defaults.
+  window.addEventListener('bp-reset-strip', () => {
+    try {
+      localStorage.removeItem('bp-strip-xy');
+      localStorage.removeItem('bp-preview-h');
+    } catch {}
+    setH(110);
+    setXY(8, 8);
+    tick();
+  });
 
   setInterval(tick, 500);
 
