@@ -5,29 +5,20 @@
 <title>Theater Mode</title>
 <style>
   /* Inline styles are fine on an extension page; inline scripts are not, so popup.js is separate.
-     #FFCE1B is the brand colour and passes 3:1 on the dark surface. On the light surface it is
-     1.49:1, below what WCAG 1.4.11 wants of a state indicator, so light mode uses #B8860B. */
+     One surface, charcoal, in both browser themes. That's the palette in plans/chrome-web-store.md
+     (charcoal base, one warm accent, white text) and it's what lets the toggle use the brand
+     #FFCE1B unchanged: 11.06:1 here, against 1.49:1 on white, which is below the 3:1 WCAG 1.4.11
+     wants of a state indicator. A light popup would force a duller gold that doesn't match the
+     toolbar icon. */
   :root {
-    --bg: #fff;
-    --fg: #1f1f1f;
-    --muted: #5f6368;
-    --line: #e3e3e3;
-    --off: #bdc1c6;
-    --on: #b8860b;
-    --knob: #fff;
-    --hover: #f5f5f5;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #202124;
-      --fg: #e8eaed;
-      --muted: #9aa0a6;
-      --line: #3c4043;
-      --off: #5f6368;
-      --on: #ffce1b;
-      --knob: #202124;
-      --hover: #2a2b2e;
-    }
+    --bg: #1f1f1f;
+    --fg: #ffffff;
+    --muted: #9aa0a6;
+    --line: #3c4043;
+    --off: #80868b;
+    --on: #ffce1b;
+    --knob-on: #1f1f1f;
+    --hover: #2c2c2c;
   }
   * { box-sizing: border-box; }
   body {
@@ -52,8 +43,8 @@
     border-radius: 50%; background: #fff; transition: left .15s;
   }
   .tg:checked { background: var(--on); }
-  .tg:checked::after { left: 18px; background: var(--knob); }
-  .tg:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  .tg:checked::after { left: 18px; background: var(--knob-on); }
+  .tg:focus-visible { outline: 2px solid var(--on); outline-offset: 2px; }
   .tg:disabled { cursor: default; }
   button {
     font: inherit; font-size: 13px; padding: 5px 12px; border: 1px solid var(--line);
@@ -71,7 +62,7 @@
 <body>
 
 <header>
-  <img src="icons/48-extensions.png" alt="">
+  <img src="icons/128-web-store.png" alt="">
   <div style="flex:1">
     <h1>Theater Mode</h1>
     <p id="status">Checking this tab…</p>

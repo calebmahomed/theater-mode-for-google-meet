@@ -112,7 +112,14 @@ The version number is shown in the footer area, read from `chrome.runtime.getMan
 
 With the master switch off, the three rows and the reset row are dimmed and non-interactive. The header and footer stay live.
 
-Styling follows `prefers-color-scheme` so the popup matches the rest of the browser. Amber `#DFA033` is the on-state colour for toggles, matching the icon. No other accent.
+One charcoal surface in both browser themes, not a light/dark pair. That is the palette already
+recorded in `plans/chrome-web-store.md` — charcoal base, one warm accent, white text — and it is
+what lets the toggle use the brand `#FFCE1B` unchanged.
+
+On a white surface `#FFCE1B` is 1.49:1, below the 3:1 WCAG 1.4.11 asks of a state indicator, so
+a light popup forces a duller gold that visibly does not match the toolbar icon sitting inches
+away. On charcoal it is 11.06:1. The off-state grey is `#80868B` (4.47:1); `#5F6368` was tried
+first and fails at 2.72:1.
 
 "Hide my tile" is deliberately duplicated between the popup and the existing in-strip pill. The pill is faster mid-call; the popup is where someone looks when they do not know the pill exists.
 

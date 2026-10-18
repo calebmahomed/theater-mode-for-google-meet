@@ -101,8 +101,11 @@ Chrome MV3 extension, "Theater Mode for Google Meet" (renamed from Meet Better P
     received in a service worker and fire globally, so forwarding to the active tab breaks
     using the shortcut from another app — which is exactly what the `hidden`/`visibilityState`
     spoofing in `pip.js` exists to support. Not worth the extension's first background script.
-  - Brand colour is `#FFCE1B`. It is 1.49:1 on white, below WCAG 1.4.11's 3:1 for a state
-    indicator, so the popup toggle uses `#B8860B` in light mode and `#FFCE1B` in dark.
+  - Brand colour is `#FFCE1B`. The popup is **one charcoal surface in both browser themes**, not
+    a light/dark pair. A light popup can't use `#FFCE1B` on its toggles — 1.49:1, under WCAG
+    1.4.11's 3:1 for a state indicator — so it forced a duller `#B8860B` that clashed with the
+    toolbar icon beside it. On charcoal the brand colour is 11.06:1 and the two match exactly.
+    Off-state grey is `#80868B` (4.47:1); `#5F6368` fails at 2.72:1.
   - A code review found one Critical, since fixed: `bridge.js` mirrored only the keys *present*
     in `chrome.storage`, so a leftover `localStorage` value outlived the storage it mirrors.
     Uninstall/reinstall wipes `chrome.storage` but not site data, which brought the extension
