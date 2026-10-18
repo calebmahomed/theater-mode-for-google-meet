@@ -117,14 +117,25 @@ Chrome MV3 extension, "Theater Mode for Google Meet" (renamed from Meet Better P
     mirror, `onChanged`, `onMessage`, `tabs.query`, either `sendMessage` — has ever executed.
     That is where the remaining risk is concentrated.
 
+- 2026-10-18 (later): The share's own controls (zoom pill, exit full screen) stayed visible while
+  the bars were faded, so an idle window wasn't video-only. `.bp-zoom` now fades with
+  `html.bp-bars` exactly like `.bp-bar`, and `.bp-zoom` joined the `overBar` hit test so resting
+  the cursor on the controls keeps them up instead of fading mid-click. `visibility: hidden`
+  (not `display: none`) keeps the pill's box, so the `--bp-pad` width measurement still works.
+  Unverified.
+- 2026-10-18: Alt+P reported as doing nothing with PiP both on and off. Most likely not a defect:
+  it targets the largest *remote* tile, so a solo call has no track to show and both states
+  correctly do nothing. Retest with a second participant before investigating.
+
 ## Open / next
-1. **Verify the popup in a live call.** Nothing in the 2026-10-18 work has been run in Chrome.
+1. **Retest Alt+P with a second participant**, and the control fade above.
+2. **Verify the rest of the popup in a live call.** Nothing in the 2026-10-18 work has been run in Chrome.
    See the verification steps in `plans/popup-settings-implementation.md`, plus two the review
    added: (a) turn the master off, remove the extension, re-add it, and confirm Meet is still
    themed and the popup agrees; (b) with the popup open, click the in-page "Hide me" pill and
    watch the popup's toggle follow.
-2. Icon art: the white play triangle is 1.49:1 on `#FFCE1B` and should be near-black (11.06:1).
-3. Then the roadmap in `plans/chrome-web-store.md`: preview strip restyle, `version: 1.0.0`,
+3. Icon art: the white play triangle is 1.49:1 on `#FFCE1B` and should be near-black (11.06:1).
+4. Then the roadmap in `plans/chrome-web-store.md`: preview strip restyle, `version: 1.0.0`,
    test in plain Chrome.
 
 Older:
