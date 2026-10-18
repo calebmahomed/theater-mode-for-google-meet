@@ -123,9 +123,20 @@ Chrome MV3 extension, "Theater Mode for Google Meet" (renamed from Meet Better P
   the cursor on the controls keeps them up instead of fading mid-click. `visibility: hidden`
   (not `display: none`) keeps the pill's box, so the `--bp-pad` width measurement still works.
   Unverified.
-- 2026-10-18: Alt+P reported as doing nothing with PiP both on and off. Most likely not a defect:
-  it targets the largest *remote* tile, so a solo call has no track to show and both states
-  correctly do nothing. Retest with a second participant before investigating.
+- 2026-10-18: Alt+P reported as doing nothing with PiP both on and off. Debugged live via Claude
+  in Chrome. Two separate causes, neither a defect in the gating:
+  - **Stale content scripts.** Content scripts only inject on navigation, so a Meet tab open
+    across an extension reload keeps running the previous build. That tab had the old `pip.js`
+    (patched `RTCPeerConnection`) but no `settings.js`, so `window.__bpSettings` was undefined
+    and `pipOn()` threw on every keypress. Refreshing the tab fixes it. Worth remembering for
+    every future live test: **reload the extension, then refresh Meet.**
+  - **No remote camera.** With the second participant's camera off there is no remote track, so
+    `showLargestRemote()` returns nothing and Alt+P correctly does nothing. A call with 3
+    participant tiles still had only 2 video elements (own share + own camera).
+  - Confirmed live at the same time: the bridge removed a stale `bp-self-hidden: '1'` that
+    `chrome.storage` had no opinion on — the Critical the code review caught, working.
+  - **Open:** Alt+P gives no feedback when there is nothing to show, which is what made this look
+    broken for half an hour. Worth a brief toast or a console warning.
 
 ## Open / next
 1. **Retest Alt+P with a second participant**, and the control fade above.
