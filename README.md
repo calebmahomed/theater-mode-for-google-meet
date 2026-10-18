@@ -9,7 +9,7 @@ A Chrome extension that turns Google Meet into a watch-together view whenever so
   - The share's zoom and full-screen controls move to the top right, clear of the bars.
 - **Better picture-in-picture.**
   - Meet's PiP window becomes a 16:9, video-only view of the other cameras.
-  - Alt+P opens native picture-in-picture of the main speaker.
+  - Alt+P (or Option+P) opens native picture-in-picture of the main speaker.
 - **Settings in the toolbar.** Click the extension icon for a master on/off switch, toggles
   for picture-in-picture, hiding your own tile and keeping Meet's controls visible, and a
   button to bring the preview strip back if you drag it off screen.
