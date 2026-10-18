@@ -103,12 +103,23 @@ Chrome MV3 extension, "Theater Mode for Google Meet" (renamed from Meet Better P
     spoofing in `pip.js` exists to support. Not worth the extension's first background script.
   - Brand colour is `#FFCE1B`. It is 1.49:1 on white, below WCAG 1.4.11's 3:1 for a state
     indicator, so the popup toggle uses `#B8860B` in light mode and `#FFCE1B` in dark.
-  - **Unverified:** everything above is verified only by `node --check`, the settings unit test
-    and a visual check of the popup outside Chrome. Nothing has been exercised in a live call.
+  - A code review found one Critical, since fixed: `bridge.js` mirrored only the keys *present*
+    in `chrome.storage`, so a leftover `localStorage` value outlived the storage it mirrors.
+    Uninstall/reinstall wipes `chrome.storage` but not site data, which brought the extension
+    back stuck off while the popup reported it on. The mirror now **removes** a key
+    `chrome.storage` has no opinion on, and the defaults live in `settings.js` alone — two
+    copies in two worlds is how they drift.
+  - **Unverified:** everything above is verified only by `node --check`, `test-settings.mjs`
+    and a visual check of the popup outside Chrome. No `chrome.*` call on this branch — the
+    mirror, `onChanged`, `onMessage`, `tabs.query`, either `sendMessage` — has ever executed.
+    That is where the remaining risk is concentrated.
 
 ## Open / next
 1. **Verify the popup in a live call.** Nothing in the 2026-10-18 work has been run in Chrome.
-   See the verification steps in `plans/popup-settings-implementation.md`.
+   See the verification steps in `plans/popup-settings-implementation.md`, plus two the review
+   added: (a) turn the master off, remove the extension, re-add it, and confirm Meet is still
+   themed and the popup agrees; (b) with the popup open, click the in-page "Hide me" pill and
+   watch the popup's toggle follow.
 2. Icon art: the white play triangle is 1.49:1 on `#FFCE1B` and should be near-black (11.06:1).
 3. Then the roadmap in `plans/chrome-web-store.md`: preview strip restyle, `version: 1.0.0`,
    test in plain Chrome.
