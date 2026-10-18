@@ -3,6 +3,13 @@
 Chrome MV3 extension, "Theater Mode for Google Meet" (renamed from Meet Better PiP, 2026-10-17). User runs it in Arc. Public repo: https://github.com/calebmahomed/theater-mode-for-google-meet (MIT). Content scripts run in the page's MAIN world at document_start on meet.google.com. No build step; reload the unpacked extension to test.
 
 ## Files
+- `settings.js`: MAIN world, loaded first. Reads the four settings from `localStorage`
+  synchronously at `document_start` and exposes `__bpSettings`, `__bpSet`, `__bpOnSettings`.
+- `bridge.js`: ISOLATED world. The only page-side file that touches `chrome.*`. Mirrors
+  `chrome.storage.local` into `localStorage`, relays page writes back up, forwards popup
+  commands in.
+- `popup.html` / `popup.js`: the toolbar settings menu.
+- `test-settings.mjs`: `node test-settings.mjs`. The only automated check in the repo.
 - `pip.js`: picture-in-picture.
   - Patches `RTCPeerConnection` to track remote video. A track counts as remote only if its `framesDecoded` keeps increasing, because stale receivers show black.
   - Wraps Meet's Document PiP (`requestWindow`): forces a 480x270 window and adds a black overlay of remote camera videos. Hovering the window reveals Meet's own PiP UI.
@@ -77,11 +84,36 @@ Chrome MV3 extension, "Theater Mode for Google Meet" (renamed from Meet Better P
   - The "<name> (Presenting)" toast in the top bar covered `Zoom out`: a remote share's pill is wider (zoom out, %, zoom in, open in new window, full screen) than the fixed 204px reserve. Fix: top-row padding is `var(--bp-pad)` = the pill's measured width + 16, keeping the last width while the pill is hidden (0 wide).
   - Bars reveal changed at the user's request: show on any mouse move, hide after 2s still. They stay up while the cursor rests on a bar or docked group. Both unverified (the call was in PiP when I checked).
 
+- 2026-10-18: Added a toolbar popup with a master switch, picture-in-picture, hide-my-tile and
+  keep-controls-visible toggles, plus a preview-strip reset.
+  - A popup is an extension page on a different origin, so it cannot reach the MAIN-world
+    scripts or `meet.google.com`'s `localStorage`. Hence `bridge.js` in the ISOLATED world,
+    which shares the page's DOM and storage but not its JS context. `storage` is the only new
+    permission; `scripting` was rejected as broader and worse on the listing.
+  - **`chrome.storage` is authoritative, `localStorage` is a cache.** `localStorage` exists as
+    the synchronous read path at `document_start`: an async `chrome.storage` read would let
+    theater mode paint for a frame before learning the extension is off. The "Hide me" pill no
+    longer writes `localStorage` directly — it goes through `__bpSet`, or the bridge's mirror
+    would overwrite it on the next load.
+  - Gating PiP meant gating the `requestWindow` wrapper too, not just the overlay and Alt+P:
+    the forced 480x270 window is visible, so leaving it would make "off" a lie.
+  - Rebindable Alt+P via `chrome.commands` was considered and rejected. Commands can only be
+    received in a service worker and fire globally, so forwarding to the active tab breaks
+    using the shortcut from another app — which is exactly what the `hidden`/`visibilityState`
+    spoofing in `pip.js` exists to support. Not worth the extension's first background script.
+  - Brand colour is `#FFCE1B`. It is 1.49:1 on white, below WCAG 1.4.11's 3:1 for a state
+    indicator, so the popup toggle uses `#B8860B` in light mode and `#FFCE1B` in dark.
+  - **Unverified:** everything above is verified only by `node --check`, the settings unit test
+    and a visual check of the popup outside Chrome. Nothing has been exercised in a live call.
+
 ## Open / next
-All of the 2026-10-17 fixes were confirmed working by the user (presenting, remote share, drag/resize, docked bars, show-on-move bars, speaking ring).
-1. See the Roadmap in `plans/chrome-web-store.md` (next up: preview strip restyle).
-2. Tab share: the zoom pill move hasn't been explicitly confirmed (window and remote shares were).
+1. **Verify the popup in a live call.** Nothing in the 2026-10-18 work has been run in Chrome.
+   See the verification steps in `plans/popup-settings-implementation.md`.
+2. Icon art: the white play triangle is 1.49:1 on `#FFCE1B` and should be near-black (11.06:1).
+3. Then the roadmap in `plans/chrome-web-store.md`: preview strip restyle, `version: 1.0.0`,
+   test in plain Chrome.
 
 Older:
+- Tab share: the zoom pill move hasn't been explicitly confirmed (window and remote shares were).
 - Confirm the presentation-detection label against a live call. (`Zoom in` exists in the main doc while presenting.)
 - Non-English UI isn't supported in either file.
