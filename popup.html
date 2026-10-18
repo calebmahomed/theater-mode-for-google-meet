@@ -39,7 +39,7 @@
   header h1 { margin: 0; font-size: 14px; font-weight: 500; }
   #status { margin: 1px 0 0; font-size: 12px; color: var(--muted); }
   .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 16px; }
-  .row label { font-size: 14px; }
+  .row label, .row span { font-size: 14px; }
   .row p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
   #prefs.off { opacity: .4; pointer-events: none; }
   hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
@@ -54,6 +54,7 @@
   .tg:checked { background: var(--on); }
   .tg:checked::after { left: 18px; background: var(--knob); }
   .tg:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  .tg:disabled { cursor: default; }
   button {
     font: inherit; font-size: 13px; padding: 5px 12px; border: 1px solid var(--line);
     border-radius: 6px; background: transparent; color: var(--fg); cursor: pointer;
@@ -82,37 +83,40 @@
   <div class="row">
     <div>
       <label for="selfHidden">Hide my tile</label>
-      <p>While someone is presenting</p>
+      <p id="d-self">While someone is presenting</p>
     </div>
-    <input type="checkbox" class="tg" id="selfHidden">
+    <input type="checkbox" class="tg" id="selfHidden" aria-describedby="d-self">
   </div>
   <div class="row">
     <div>
       <label for="pip">Picture-in-picture</label>
-      <p>Video-only PiP window</p>
+      <p id="d-pip">Video-only PiP window</p>
     </div>
-    <input type="checkbox" class="tg" id="pip">
+    <input type="checkbox" class="tg" id="pip" aria-describedby="d-pip">
   </div>
   <div class="row">
     <div>
       <label for="barsPinned">Keep controls visible</label>
-      <p>Don't fade Meet's bars</p>
+      <p id="d-bars">Don't fade Meet's bars</p>
     </div>
-    <input type="checkbox" class="tg" id="barsPinned">
+    <input type="checkbox" class="tg" id="barsPinned" aria-describedby="d-bars">
   </div>
   <hr>
   <div class="row">
     <div>
-      <label>Preview strip</label>
-      <p>Dragged off screen? Put it back</p>
+      <span>Preview strip</span>
+      <p id="d-strip">Dragged off screen? Put it back</p>
     </div>
-    <button id="reset">Reset</button>
+    <button id="reset" aria-label="Reset preview strip" aria-describedby="d-strip">Reset</button>
   </div>
 </div>
 
 <footer>
   <span>Alt+P · picture-in-picture</span>
-  <a href="https://github.com/calebmahomed/theater-mode-for-google-meet" target="_blank" rel="noreferrer">GitHub <span id="version"></span></a>
+  <span>
+    <a href="https://github.com/calebmahomed/theater-mode-for-google-meet" target="_blank" rel="noreferrer">GitHub</a>
+    <span id="version"></span>
+  </span>
 </footer>
 
 <script src="popup.js"></script>

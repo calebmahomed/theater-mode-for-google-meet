@@ -16,11 +16,20 @@
     try { return !!chrome.runtime?.id; } catch { return false; }
   };
 
+  // undefined means "chrome.storage has no opinion", which must REMOVE the mirrored value, not
+  // write ''. settings.js reads '' as an explicit false, so a leftover key would outlive the
+  // storage it mirrors: uninstall/reinstall wipes chrome.storage but not the page's
+  // localStorage, and the extension would come back stuck off while the popup showed it on.
+  // The defaults live in settings.js only; duplicating them here is how the two drift apart.
+  const write = (key, value) => {
+    try {
+      if (value === undefined) localStorage.removeItem(key);
+      else localStorage.setItem(key, value ? '1' : '');
+    } catch {}
+  };
+
   const mirror = (values) => {
-    for (const [name, key] of Object.entries(KEYS)) {
-      if (!(name in values)) continue;
-      try { localStorage.setItem(key, values[name] ? '1' : ''); } catch {}
-    }
+    for (const [name, key] of Object.entries(KEYS)) write(key, values[name]);
     window.dispatchEvent(new CustomEvent('bp-settings'));
   };
 
@@ -36,11 +45,13 @@
   try {
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area !== 'local' || !alive()) return;
-      const values = {};
+      let touched = false;
       for (const [name, change] of Object.entries(changes)) {
-        if (name in KEYS) values[name] = change.newValue;
+        if (!(name in KEYS)) continue;
+        write(KEYS[name], change.newValue);
+        touched = true;
       }
-      if (Object.keys(values).length) mirror(values);
+      if (touched) window.dispatchEvent(new CustomEvent('bp-settings'));
     });
   } catch {}
 
