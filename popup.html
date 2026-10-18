@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Theater Mode</title>
+<style>
+  /* Inline styles are fine on an extension page; inline scripts are not, so popup.js is separate.
+     #FFCE1B is the brand colour and passes 3:1 on the dark surface. On the light surface it is
+     1.49:1, below what WCAG 1.4.11 wants of a state indicator, so light mode uses #B8860B. */
+  :root {
+    --bg: #fff;
+    --fg: #1f1f1f;
+    --muted: #5f6368;
+    --line: #e3e3e3;
+    --off: #bdc1c6;
+    --on: #b8860b;
+    --knob: #fff;
+    --hover: #f5f5f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #202124;
+      --fg: #e8eaed;
+      --muted: #9aa0a6;
+      --line: #3c4043;
+      --off: #5f6368;
+      --on: #ffce1b;
+      --knob: #202124;
+      --hover: #2a2b2e;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    width: 300px; margin: 0; background: var(--bg); color: var(--fg);
+    font: 400 14px/1.4 system-ui, sans-serif;
+  }
+  header { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  header img { width: 32px; height: 32px; }
+  header h1 { margin: 0; font-size: 14px; font-weight: 500; }
+  #status { margin: 1px 0 0; font-size: 12px; color: var(--muted); }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 16px; }
+  .row label { font-size: 14px; }
+  .row p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+  #prefs.off { opacity: .4; pointer-events: none; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
+  .tg {
+    appearance: none; margin: 0; flex: none; width: 36px; height: 20px; border: 0; border-radius: 10px;
+    background: var(--off); position: relative; cursor: pointer; transition: background .15s;
+  }
+  .tg::after {
+    content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+    border-radius: 50%; background: #fff; transition: left .15s;
+  }
+  .tg:checked { background: var(--on); }
+  .tg:checked::after { left: 18px; background: var(--knob); }
+  .tg:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  button {
+    font: inherit; font-size: 13px; padding: 5px 12px; border: 1px solid var(--line);
+    border-radius: 6px; background: transparent; color: var(--fg); cursor: pointer;
+  }
+  button:hover:not(:disabled) { background: var(--hover); }
+  button:disabled { opacity: .4; cursor: default; }
+  footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted);
+  }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="icons/48-extensions.png" alt="">
+  <div style="flex:1">
+    <h1>Theater Mode</h1>
+    <p id="status">Checking this tab…</p>
+  </div>
+  <input type="checkbox" class="tg" id="enabled" aria-label="Theater Mode on">
+</header>
+
+<div id="prefs">
+  <div class="row">
+    <div>
+      <label for="selfHidden">Hide my tile</label>
+      <p>While someone is presenting</p>
+    </div>
+    <input type="checkbox" class="tg" id="selfHidden">
+  </div>
+  <div class="row">
+    <div>
+      <label for="pip">Picture-in-picture</label>
+      <p>Video-only PiP window</p>
+    </div>
+    <input type="checkbox" class="tg" id="pip">
+  </div>
+  <div class="row">
+    <div>
+      <label for="barsPinned">Keep controls visible</label>
+      <p>Don't fade Meet's bars</p>
+    </div>
+    <input type="checkbox" class="tg" id="barsPinned">
+  </div>
+  <hr>
+  <div class="row">
+    <div>
+      <label>Preview strip</label>
+      <p>Dragged off screen? Put it back</p>
+    </div>
+    <button id="reset">Reset</button>
+  </div>
+</div>
+
+<footer>
+  <span>Alt+P · picture-in-picture</span>
+  <a href="https://github.com/calebmahomed/theater-mode-for-google-meet" target="_blank" rel="noreferrer">GitHub <span id="version"></span></a>
+</footer>
+
+<script src="popup.js"></script>
+</body>
+</html>
