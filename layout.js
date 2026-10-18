@@ -20,6 +20,11 @@
     /* Fades with the bars: idle should show video and nothing else. */
     html.bp-presenting .bp-zoom { position: fixed !important; top: 8px !important; right: 8px !important; bottom: auto !important; left: auto !important; z-index: 3 !important; opacity: 0; visibility: hidden; transition: opacity .2s, visibility .2s; }
     html.bp-presenting.bp-bars .bp-zoom { opacity: 1; visibility: visible; }
+    html.bp-presenting .bp-handle { opacity: 0; visibility: hidden; transition: opacity .2s, visibility .2s; }
+    html.bp-presenting.bp-bars .bp-handle { opacity: .8; visibility: visible; }
+    /* Idle hides the pointer too, the way a video player does. The * rule is needed because
+       .bp-tile sets cursor: grab and Meet sets its own on plenty of elements. */
+    html.bp-presenting:not(.bp-bars), html.bp-presenting:not(.bp-bars) * { cursor: none !important; }
     html.bp-presenting .bp-dock { position: fixed !important; left: var(--bp-left, 12px) !important; bottom: 20px !important; top: auto !important; }
     html.bp-presenting .bp-toprow { box-sizing: border-box !important; padding-right: var(--bp-pad, 204px) !important; }
     /* Top bar above the bottom bar (the docked groups overlap it), but click-through except its groups,
@@ -65,8 +70,9 @@
   const handle = document.createElement('div');
   Object.assign(handle.style, {
     position: 'fixed', zIndex: '4', width: '14px', height: '14px', cursor: 'nwse-resize', display: 'none',
-    borderRight: '3px solid #fff', borderBottom: '3px solid #fff', borderBottomRightRadius: '6px', opacity: '.8',
+    borderRight: '3px solid #fff', borderBottom: '3px solid #fff', borderBottomRightRadius: '10px',
   });
+  handle.classList.add('bp-handle');
 
   let h = 110, x = 8, y = 8;
   try { [x, y] = JSON.parse(localStorage.getItem('bp-strip-xy')) ?? [x, y]; } catch {}
@@ -209,7 +215,7 @@
   document.addEventListener('mousemove', (e) => {
     root.classList.add('bp-bars');
     clearTimeout(idle);
-    const overBar = [...document.querySelectorAll('.bp-bar, .bp-dock, .bp-zoom')].some((b) => {
+    const overBar = [...document.querySelectorAll('.bp-bar, .bp-dock, .bp-zoom, .bp-handle')].some((b) => {
       const r = b.getBoundingClientRect();
       return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
     });

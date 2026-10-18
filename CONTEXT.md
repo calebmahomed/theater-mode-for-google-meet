@@ -140,6 +140,19 @@ Chrome MV3 extension, "Theater Mode for Google Meet" (renamed from Meet Better P
     centre, `pointer-events: none`. With PiP switched off it still does nothing silently — off
     means off, and the keystroke belongs to the page.
 
+- 2026-10-18 (3rd): Idle state should be video and nothing else.
+  - The resize handle stayed visible with the bars hidden. It now has a `bp-handle` class and
+    fades on `html.bp-bars` like `.bp-bar` and `.bp-zoom`; its `opacity` moved out of the inline
+    style so the stylesheet can own the reveal. `.bp-handle` also joined the `overBar` hit test,
+    so resting on it can't make it vanish mid-resize.
+  - The cursor now hides with the bars: `html.bp-presenting:not(.bp-bars), ... *` with
+    `cursor: none !important`. The `*` is needed because `.bp-tile` sets `cursor: grab` and Meet
+    sets its own on many elements. Verified live: with bars hidden the share, the tiles and body
+    all compute `none`; with bars shown they revert to `auto`/`grab`.
+  - Handle radius 6px -> 10px. 6px was the concentric inset of the tile's 8px radius at the
+    handle's 2px inset, which is geometrically "correct" but reads as too tight. **Unverified
+    which target the user meant** — 10px matches a macOS Chrome window corner.
+
 ## Open / next
 1. **Retest Alt+P with a second participant**, and the control fade above.
 2. **Verify the rest of the popup in a live call.** Nothing in the 2026-10-18 work has been run in Chrome.
