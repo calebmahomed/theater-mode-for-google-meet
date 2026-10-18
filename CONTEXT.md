@@ -134,8 +134,7 @@ Chrome MV3 extension, "Theater Mode for Google Meet" (renamed from Meet Better P
    added: (a) turn the master off, remove the extension, re-add it, and confirm Meet is still
    themed and the popup agrees; (b) with the popup open, click the in-page "Hide me" pill and
    watch the popup's toggle follow.
-3. Icon art: the white play triangle is 1.49:1 on `#FFCE1B` and should be near-black (11.06:1).
-4. Then the roadmap in `plans/chrome-web-store.md`: preview strip restyle, `version: 1.0.0`,
+3. Then the roadmap in `plans/chrome-web-store.md`: preview strip restyle, `version: 1.0.0`,
    test in plain Chrome.
 
 Older:
