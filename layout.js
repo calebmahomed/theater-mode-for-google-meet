@@ -17,7 +17,9 @@
     html.bp-presenting.bp-bars .bp-bar { opacity: 1; visibility: visible; }
     /* Meet slides bars in with a transform, which would trap the position:fixed docked groups. */
     html.bp-presenting .bp-bar > * { transform: none !important; }
-    html.bp-presenting .bp-zoom { position: fixed !important; top: 8px !important; right: 8px !important; bottom: auto !important; left: auto !important; z-index: 3 !important; }
+    /* Fades with the bars: idle should show video and nothing else. */
+    html.bp-presenting .bp-zoom { position: fixed !important; top: 8px !important; right: 8px !important; bottom: auto !important; left: auto !important; z-index: 3 !important; opacity: 0; visibility: hidden; transition: opacity .2s, visibility .2s; }
+    html.bp-presenting.bp-bars .bp-zoom { opacity: 1; visibility: visible; }
     html.bp-presenting .bp-dock { position: fixed !important; left: var(--bp-left, 12px) !important; bottom: 20px !important; top: auto !important; }
     html.bp-presenting .bp-toprow { box-sizing: border-box !important; padding-right: var(--bp-pad, 204px) !important; }
     /* Top bar above the bottom bar (the docked groups overlap it), but click-through except its groups,
@@ -207,7 +209,7 @@
   document.addEventListener('mousemove', (e) => {
     root.classList.add('bp-bars');
     clearTimeout(idle);
-    const overBar = [...document.querySelectorAll('.bp-bar, .bp-dock')].some((b) => {
+    const overBar = [...document.querySelectorAll('.bp-bar, .bp-dock, .bp-zoom')].some((b) => {
       const r = b.getBoundingClientRect();
       return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
     });

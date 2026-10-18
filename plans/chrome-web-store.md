@@ -13,8 +13,7 @@ Store specs below are from memory. Check them against the current Chrome Web Sto
 
 ## 2. Code changes before submitting
 - [x] Icons: 16, 32, 48 and 128 px PNGs, plus an `icons` field in `manifest.json`. Done
-  2026-10-18. Brand colour `#FFCE1B`. Outstanding: the white play triangle is 1.49:1 against
-  the amber and should be near-black.
+  2026-10-18. Brand colour `#FFCE1B`, dark play glyph (11.06:1).
 - [ ] Bump `version` to `1.0.0`.
 - [ ] Test in plain Chrome, not just Arc: a fresh profile, presenting a tab, a window and a full screen, a remote share, and PiP.
 - [ ] Release zip: `manifest.json`, `settings.js`, `pip.js`, `layout.js`, `bridge.js`,
@@ -92,7 +91,7 @@ Answer to "what's next": the first unchecked item, plus anything blocked.
    Done 2026-10-18, **not yet verified in a live call**.
 3. [ ] Verify the popup in a live call. *Blocks everything below.* Steps in
    `plans/popup-settings-implementation.md`.
-4. [ ] Maintainer: redraw the icon's play triangle in near-black (currently 1.49:1 on the amber).
+4. [x] Maintainer: redrew the icon's play triangle in near-black (11.06:1). Done 2026-10-18.
 5. [ ] Preview strip restyle (round avatar, cramped self-tile buttons, resize handle). *Code, before screenshots.*
 6. [ ] Confirm the zoom pill moves on a tab share. *Quick live check.*
 7. [ ] `version: 1.0.0`, then test in plain Chrome (section 2).

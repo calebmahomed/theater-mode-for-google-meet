@@ -117,14 +117,38 @@ Chrome MV3 extension, "Theater Mode for Google Meet" (renamed from Meet Better P
     mirror, `onChanged`, `onMessage`, `tabs.query`, either `sendMessage` — has ever executed.
     That is where the remaining risk is concentrated.
 
+- 2026-10-18 (later): The share's own controls (zoom pill, exit full screen) stayed visible while
+  the bars were faded, so an idle window wasn't video-only. `.bp-zoom` now fades with
+  `html.bp-bars` exactly like `.bp-bar`, and `.bp-zoom` joined the `overBar` hit test so resting
+  the cursor on the controls keeps them up instead of fading mid-click. `visibility: hidden`
+  (not `display: none`) keeps the pill's box, so the `--bp-pad` width measurement still works.
+  Unverified.
+- 2026-10-18: Alt+P reported as doing nothing with PiP both on and off. Debugged live via Claude
+  in Chrome. Two separate causes, neither a defect in the gating:
+  - **Stale content scripts.** Content scripts only inject on navigation, so a Meet tab open
+    across an extension reload keeps running the previous build. That tab had the old `pip.js`
+    (patched `RTCPeerConnection`) but no `settings.js`, so `window.__bpSettings` was undefined
+    and `pipOn()` threw on every keypress. Refreshing the tab fixes it. Worth remembering for
+    every future live test: **reload the extension, then refresh Meet.**
+  - **No remote camera.** With the second participant's camera off there is no remote track, so
+    `showLargestRemote()` returns nothing and Alt+P correctly does nothing. A call with 3
+    participant tiles still had only 2 video elements (own share + own camera).
+  - Confirmed live at the same time: the bridge removed a stale `bp-self-hidden: '1'` that
+    `chrome.storage` had no opinion on — the Critical the code review caught, working.
+  - Fixed: Alt+P now shows a 2.5s toast ("Nothing to show — no one else's camera is on") when
+    `showLargestRemote()` finds nothing, instead of failing silently. Inline styles, bottom
+    centre, `pointer-events: none`. With PiP switched off it still does nothing silently — off
+    means off, and the keystroke belongs to the page.
+
 ## Open / next
-1. **Verify the popup in a live call.** Nothing in the 2026-10-18 work has been run in Chrome.
+1. **Retest Alt+P with a second participant**, and the control fade above.
+2. **Verify the rest of the popup in a live call.** Nothing in the 2026-10-18 work has been run in Chrome.
    See the verification steps in `plans/popup-settings-implementation.md`, plus two the review
    added: (a) turn the master off, remove the extension, re-add it, and confirm Meet is still
    themed and the popup agrees; (b) with the popup open, click the in-page "Hide me" pill and
    watch the popup's toggle follow.
-2. Icon art: the white play triangle is 1.49:1 on `#FFCE1B` and should be near-black (11.06:1).
-3. Then the roadmap in `plans/chrome-web-store.md`: preview strip restyle, `version: 1.0.0`,
+3. Icon art: the white play triangle is 1.49:1 on `#FFCE1B` and should be near-black (11.06:1).
+4. Then the roadmap in `plans/chrome-web-store.md`: preview strip restyle, `version: 1.0.0`,
    test in plain Chrome.
 
 Older:
