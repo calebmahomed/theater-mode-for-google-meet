@@ -7,14 +7,20 @@
   const root = document.documentElement;
   const style = document.createElement('style');
   style.textContent = `
-    html.bp-presenting .bp-pres { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 1 !important; }
-    html.bp-presenting .bp-tile { position: fixed !important; top: var(--bp-y) !important; left: calc(var(--bp-x) + var(--bp-i) * (var(--bp-h) * 16 / 9 + 8px)) !important; width: calc(var(--bp-h) * 16 / 9) !important; height: var(--bp-h) !important; z-index: 3 !important; border-radius: 8px; overflow: hidden; transition: none !important; user-select: none; cursor: grab; }
+    html.bp-presenting .bp-pres { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 1 !important; background: #000 !important; }
+    /* ^ black: the share is object-fit contain, so its letterbox bands are transparent and showed
+       Meet's grey page background (rgb(19, 19, 20) on the root c-wiz). */
+    html.bp-presenting .bp-tile { position: fixed !important; top: var(--bp-y) !important; left: calc(var(--bp-x) + var(--bp-i) * (var(--bp-h) * 16 / 9 + 8px)) !important; width: calc(var(--bp-h) * 16 / 9) !important; height: var(--bp-h) !important; z-index: 3 !important; border-radius: var(--bp-r, 16px) !important; overflow: hidden !important; transition: none !important; user-select: none; cursor: grab; }
     /* Meet's speaking ring is a 4px outline on a tile-sized ::after; draw it inside so overflow doesn't clip it. */
     html.bp-presenting .bp-tile *::after { outline-offset: -4px !important; }
     html.bp-presenting :is(.bp-pres, .bp-tile) :is([data-ssrc], video) { left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; }
     /* Hidden bars use visibility, not just pointer-events: Meet sets pointer-events:auto on inner groups. */
     html.bp-presenting .bp-bar { position: fixed !important; z-index: 2 !important; opacity: 0; visibility: hidden; transition: opacity .2s, visibility .2s; }
     html.bp-presenting.bp-bars .bp-bar { opacity: 1; visibility: visible; }
+    /* Bottom bar only. The top bar (the one holding the docked groups) sits above the share, and
+       the share's full-screen/zoom pill can't be raised over it: it's trapped inside .bp-pres's
+       stacking context. An opaque top bar hides the pill, so the top bar stays transparent. */
+    html.bp-presenting .bp-bar:not(:has(.bp-dock)) { background: #000 !important; }
     /* Meet slides bars in with a transform, which would trap the position:fixed docked groups. */
     html.bp-presenting .bp-bar > * { transform: none !important; }
     /* Fades with the bars: idle should show video and nothing else. */
@@ -219,6 +225,18 @@
     }
     setH(h);
     setXY(x, y);
+
+    // Clip tiles at Meet's own corner radius. Meet rounds the video at a larger radius than our
+    // old 8px clip, and behind it paints a square grey background and a near-square speaking glow:
+    // both showed in the corners as a faint rectangle, the glow only while someone talks. Read the
+    // radius from the tile's full-size rounded layer, because Meet has changed it (24px in Oct).
+    const probe = document.querySelector('.bp-tile:not(.bp-self-hidden)');
+    if (probe) {
+      const w = probe.getBoundingClientRect().width;
+      const layer = [...probe.querySelectorAll('*')].find((e) =>
+        parseFloat(getComputedStyle(e).borderTopLeftRadius) > 0 && Math.abs(e.getBoundingClientRect().width - w) < 1);
+      if (layer) root.style.setProperty('--bp-r', getComputedStyle(layer).borderTopLeftRadius);
+    }
 
     // ponytail: English aria-labels; other UI languages need their own labels here.
     for (const sel of ['[aria-label*="Leave call" i]', '[aria-label="Meeting details"]']) {

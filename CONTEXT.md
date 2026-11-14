@@ -165,6 +165,30 @@ Chrome MV3 extension, "Theater Mode for Google Meet" (renamed from Meet Better P
   - The 8px gap between previews isn't draggable — it's the share underneath.
   - **Unverified live.** Only `node --check`. Reload the extension, then refresh Meet.
 
+- 2026-11-14: Faint rectangle in the preview corners, strongest while the other person talks.
+  Measured live: Meet's tile is a stack of full-size layers. The video layers are rounded at
+  **16px**, but `CNjCjf` paints solid `#3C4043` at 0px radius and `tC2Wod::before` is a light-blue
+  speaking glow at 1.6px radius whose opacity goes 0 → 1 while they speak. `.bp-tile` clipped at
+  8px, so both showed in the sliver between the 8px and 16px curves.
+  - Fix: `.bp-tile` clips at `var(--bp-r, 16px)`, set each tick from the computed radius of the
+    first full-width rounded layer inside a tile. Measured, not hardcoded: the 10-17 entry recorded
+    Meet's ring at 24px, so Meet has changed it before.
+  - First diagnostic missed the glow because it diffed background, shadow and radius but not
+    `opacity`. Watch `opacity` too when diffing Meet's state changes.
+  - Tiles are visibly rounder (16px vs 8px), matching Meet's own tiles. **Unverified live.**
+
+- 2026-11-14 (later): Verified live via Claude in Chrome (Meet tab dragged into the session's tab group).
+  - The radius fix above didn't take at first: the tile computed `border-radius: 0px`. Some tiles
+    carry Meet's own classes (`dkjMxf kssMZb WX1kx …`) whose radius beat ours, because every other
+    property in the `.bp-tile` rule was `!important` and `border-radius` wasn't. Now
+    `!important`, and `overflow: hidden` too. Confirmed 16px, corners clean.
+  - Grey background: the share video fills the window with `object-fit: contain`, so its letterbox
+    bands are transparent and show Meet's page root (`c-wiz`, `rgb(19, 19, 20)`). Fix: `.bp-pres`
+    paints `#000`. Confirmed black.
+  - Bottom bar is `#000`. The top bar is deliberately left transparent: an opaque top bar hid the
+    share's full-screen/zoom pill, which lives inside `.bp-pres`'s stacking context (z 1) and can't
+    be raised above the bar (z 3).
+
 ## Open / next
 1. **Retest Alt+P with a second participant**, and the control fade above.
 2. **Verify the rest of the popup in a live call.** Nothing in the 2026-10-18 work has been run in Chrome.
