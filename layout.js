@@ -1,6 +1,6 @@
 (() => {
   // While you present: shared screen fills the window, previews in a strip along the top
-  // (drag the corner handle to resize), top/bottom bars overlay and show on hover.
+  // (drag any edge or corner to resize), top/bottom bars overlay and show on hover.
   // Meet's class names are obfuscated, so we tag elements ourselves every tick.
   // Tiles are moved with position:fixed only; <main> keeps its size, otherwise Meet
   // re-lays out, drops participant tiles and stops receiving their video.
@@ -20,8 +20,6 @@
     /* Fades with the bars: idle should show video and nothing else. */
     html.bp-presenting .bp-zoom { position: fixed !important; top: 8px !important; right: 8px !important; bottom: auto !important; left: auto !important; z-index: 3 !important; opacity: 0; visibility: hidden; transition: opacity .2s, visibility .2s; }
     html.bp-presenting.bp-bars .bp-zoom { opacity: 1; visibility: visible; }
-    html.bp-presenting .bp-handle { opacity: 0; visibility: hidden; transition: opacity .2s, visibility .2s; }
-    html.bp-presenting.bp-bars .bp-handle { opacity: .8; visibility: visible; }
     /* Idle hides the pointer too, the way a video player does. The * rule is needed because
        .bp-tile sets cursor: grab and Meet sets its own on plenty of elements. */
     html.bp-presenting:not(.bp-bars), html.bp-presenting:not(.bp-bars) * { cursor: none !important; }
@@ -67,38 +65,86 @@
     return s?.groupId && !s.displaySurface;
   });
 
-  const handle = document.createElement('div');
-  Object.assign(handle.style, {
-    position: 'fixed', zIndex: '4', width: '14px', height: '14px', cursor: 'nwse-resize', display: 'none',
-    borderRight: '3px solid #fff', borderBottom: '3px solid #fff', borderBottomRightRadius: '10px',
+  // Resize zones on every edge and corner of the strip *as a whole*, not one tile. They're
+  // invisible: the resize cursor on hover is the affordance. Each straddles the outline, so it's
+  // grabbable from inside or outside. Positions come from the strip's bounding box, because
+  // Meet reorders the DOM by active speaker: the old handle sat on the last tile in DOM order,
+  // which was often the left one, so it landed in the gap between two previews.
+  const EDGE = 10;
+  const zones = [
+    ['n', 'ns-resize'], ['s', 'ns-resize'], ['e', 'ew-resize'], ['w', 'ew-resize'],
+    ['ne', 'nesw-resize'], ['sw', 'nesw-resize'], ['nw', 'nwse-resize'], ['se', 'nwse-resize'],
+  ].map(([dir, cursor]) => {
+    const z = document.createElement('div');
+    z.className = 'bp-edge';
+    z.dataset.dir = dir;
+    Object.assign(z.style, { position: 'fixed', zIndex: '4', cursor, display: 'none' });
+    return z;
   });
-  handle.classList.add('bp-handle');
 
   let h = 110, x = 8, y = 8;
   try { [x, y] = JSON.parse(localStorage.getItem('bp-strip-xy')) ?? [x, y]; } catch {}
   try { h = Number(localStorage.getItem('bp-preview-h')) || h; } catch {}
-  const placeHandle = () => {
-    const tiles = document.querySelectorAll('.bp-tile:not(.bp-self-hidden)');
-    const last = tiles[tiles.length - 1]?.getBoundingClientRect();
-    handle.style.display = last ? 'block' : 'none';
-    if (last) Object.assign(handle.style, { left: `${last.right - 16}px`, top: `${last.bottom - 16}px` });
-    selfBtn.style.left = `${last ? last.right + 8 : x}px`;
-    selfBtn.style.top = `${last ? last.top : y}px`;
+
+  const stripRect = () => {
+    const rs = [...document.querySelectorAll('.bp-tile:not(.bp-self-hidden)')].map((t) => t.getBoundingClientRect());
+    if (!rs.length) return null;
+    const left = Math.min(...rs.map((r) => r.left)), top = Math.min(...rs.map((r) => r.top));
+    const right = Math.max(...rs.map((r) => r.right)), bottom = Math.max(...rs.map((r) => r.bottom));
+    return { left, top, right, bottom, width: right - left, height: bottom - top, n: rs.length };
+  };
+  // Strip width at tile height th: n tiles at 16:9 plus 8px gaps, the same sum as .bp-tile's left calc.
+  const widthFor = (th, n) => n * th * 16 / 9 + (n - 1) * 8;
+
+  const placeControls = () => {
+    const r = root.classList.contains('bp-presenting') && stripRect();
+    for (const z of zones) {
+      z.style.display = r ? 'block' : 'none';
+      if (!r) continue;
+      const d = z.dataset.dir, half = EDGE / 2;
+      const horiz = d.includes('w') || d.includes('e'), vert = d.includes('n') || d.includes('s');
+      Object.assign(z.style, {
+        left: `${d.includes('w') ? r.left - half : d.includes('e') ? r.right - half : r.left + half}px`,
+        top: `${d.includes('n') ? r.top - half : d.includes('s') ? r.bottom - half : r.top + half}px`,
+        width: `${horiz ? EDGE : r.width - EDGE}px`,
+        height: `${vert ? EDGE : r.height - EDGE}px`,
+      });
+    }
+    selfBtn.style.left = `${r ? r.right + 12 : x}px`;
+    selfBtn.style.top = `${r ? r.top : y}px`;
   };
   const setH = (value) => {
     h = Math.min(400, Math.max(50, value));
     root.style.setProperty('--bp-h', `${h}px`);
-    placeHandle();
+    placeControls();
   };
-  handle.addEventListener('pointerdown', (e) => {
-    handle.setPointerCapture(e.pointerId);
-    const y0 = e.clientY, h0 = h;
-    handle.onpointermove = (m) => setH(h0 + m.clientY - y0);
-  });
-  handle.addEventListener('pointerup', () => {
-    handle.onpointermove = null;
-    try { localStorage.setItem('bp-preview-h', h); } catch {}
-  });
+
+  // Tiles stay 16:9, so every zone scales the whole strip and pins the opposite side in place.
+  for (const z of zones) {
+    z.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      e.stopPropagation();
+      z.setPointerCapture(e.pointerId);
+      const d = z.dataset.dir, r = stripRect(), x0 = e.clientX, y0 = e.clientY, h0 = h;
+      z.onpointermove = (m) => {
+        const dx = (m.clientX - x0) * (d.includes('w') ? -1 : d.includes('e') ? 1 : 0);
+        const dy = (m.clientY - y0) * (d.includes('n') ? -1 : d.includes('s') ? 1 : 0);
+        const fromX = (r.width + dx - (r.n - 1) * 8) * 9 / (16 * r.n); // inverse of widthFor
+        const fromY = h0 + dy;
+        // Corners follow whichever axis moved further.
+        setH(!dx ? fromY : !dy ? fromX : Math.abs(fromX - h0) > Math.abs(fromY - h0) ? fromX : fromY);
+        setXY(d.includes('w') ? r.right - widthFor(h, r.n) : r.left, d.includes('n') ? r.bottom - h : r.top);
+      };
+    });
+    z.addEventListener('pointerup', () => {
+      if (!z.onpointermove) return;
+      z.onpointermove = null;
+      try {
+        localStorage.setItem('bp-preview-h', h);
+        localStorage.setItem('bp-strip-xy', JSON.stringify([x, y]));
+      } catch {}
+    });
+  }
 
   // Drag any preview to move the whole strip. The 4px threshold keeps plain clicks on tiles working.
   const setXY = (nx, ny) => {
@@ -106,7 +152,7 @@
     y = Math.min(innerHeight - 40, Math.max(0, ny));
     root.style.setProperty('--bp-x', `${x}px`);
     root.style.setProperty('--bp-y', `${y}px`);
-    placeHandle();
+    placeControls();
   };
   let drag = null;
   document.addEventListener('pointerdown', (e) => {
@@ -144,15 +190,15 @@
     if (!S.enabled) {
       root.classList.remove('bp-presenting');
       selfBtn.style.display = 'none';
-      handle.style.display = 'none';
+      placeControls();
       return;
     }
     const presVideo = presentationVideo();
     root.classList.toggle('bp-presenting', !!presVideo);
     selfBtn.style.display = presVideo ? 'block' : 'none';
-    if (!presVideo) { handle.style.display = 'none'; return; }
+    if (!presVideo) { placeControls(); return; }
     if (!style.isConnected) document.head.append(style);
-    if (!handle.isConnected) document.body.append(handle, selfBtn);
+    if (!selfBtn.isConnected) document.body.append(...zones, selfBtn);
 
     // Meet moves the active speaker's tile to the front, so DOM order changes whenever someone
     // talks. Order by first time we saw each participant instead, so previews don't swap places.
@@ -206,7 +252,7 @@
     // "X (Presenting)" pill never covers it. Keep the last width while the pill is hidden (0 wide).
     const pillW = zoom?.closest('.bp-pres') ? zoom.getBoundingClientRect().width : 0;
     if (pillW) root.style.setProperty('--bp-pad', `${pillW + 16}px`);
-    placeHandle();
+    placeControls();
   };
 
   // Bars show while the cursor moves and hide after 2s of stillness (invisible and click-through
@@ -215,7 +261,7 @@
   document.addEventListener('mousemove', (e) => {
     root.classList.add('bp-bars');
     clearTimeout(idle);
-    const overBar = [...document.querySelectorAll('.bp-bar, .bp-dock, .bp-zoom, .bp-handle')].some((b) => {
+    const overBar = [...document.querySelectorAll('.bp-bar, .bp-dock, .bp-zoom, .bp-edge')].some((b) => {
       const r = b.getBoundingClientRect();
       return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
     });

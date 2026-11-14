@@ -153,6 +153,18 @@ Chrome MV3 extension, "Theater Mode for Google Meet" (renamed from Meet Better P
     handle's 2px inset, which is geometrically "correct" but reads as too tight. **Unverified
     which target the user meant** — 10px matches a macOS Chrome window corner.
 
+- 2026-11-13: The preview strip now resizes as one object. The visible corner handle is gone;
+  invisible zones on all four edges and corners of the strip's bounding box show resize cursors.
+  - Bug it fixes: the handle sat on the last `.bp-tile` in **DOM order**, but tiles are laid out in
+    first-seen order and Meet reorders the DOM by active speaker. With two previews the "last"
+    tile was often the left one, so the handle landed in the gap between them. The "Hide me" pill
+    had the same bug; it now sits after the strip's right edge.
+  - Tiles stay 16:9, so every zone scales the whole strip uniformly and pins the opposite side
+    (dragging the left or top edge moves `--bp-x`/`--bp-y`). Corners follow whichever axis moved
+    further. Resizing now saves position as well as height.
+  - The 8px gap between previews isn't draggable — it's the share underneath.
+  - **Unverified live.** Only `node --check`. Reload the extension, then refresh Meet.
+
 ## Open / next
 1. **Retest Alt+P with a second participant**, and the control fade above.
 2. **Verify the rest of the popup in a live call.** Nothing in the 2026-10-18 work has been run in Chrome.
